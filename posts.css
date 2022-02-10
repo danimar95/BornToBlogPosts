@@ -1,0 +1,240 @@
+header{
+  background-image: url("jumbotron.jpg");
+  height: 380px;
+  background-size: cover;
+}
+
+.headerTitle{
+  color:white;
+  font-weight: 600;
+}
+
+.headerSubtitle{
+  color:white;
+  font-weight: 600;
+}
+
+.nav-link{
+  color:white;
+  font-weight:600;
+}
+
+.navbar .navbar-collapse .nav-item.nav-link{
+  padding-right: 9rem;
+}
+
+
+.textContainer{
+  display: flex;
+  justify-content: center;
+}
+
+div.headers{
+  margin-right: 6rem;
+}
+
+.subscribeForm{
+display: flex;
+flex-direction: column;
+align-content: stretch;
+}
+
+.btn.subscribeBtn{
+  background-color:#FF243A;
+  color:white;
+  padding: 0;
+  font-weight: 600;
+  margin-top: 4px;
+  flex: auto;
+  border-radius: 30px;
+     
+} 
+
+.join{
+  font-size:25px;
+  color:#FF243A;
+  font-weight: 600;
+}
+
+
+input#title {
+  width: 38rem;
+  border-radius: 5px;
+  border-color: transparent;
+  margin-bottom: 1rem;
+}
+
+input#recipe {
+  width: 38rem;
+  height: 4rem;
+  border-radius: 5px;
+  border-color: transparent;
+  margin-bottom: 1rem;
+}
+
+.col-9.inputClass {
+  padding-left: 10rem;
+}
+
+.btn.publishBtn {
+  background-color: #FF243A;
+  color: white;
+  font-weight: 600;
+  width: 38rem;
+  border-radius: 30px;
+  padding: 0;
+}
+
+.background{
+  background-color:#F5F5F5
+}
+
+.blogsTitle{
+  color:#CC0000;
+  font-weight: bold;
+  font-size: 25px;
+  padding-left: 4rem;
+}
+
+section.postsBack{
+  padding-top: 3rem;
+  padding-left: 7rem;
+  padding-right: 7rem;
+}
+
+.card{
+   background-image: linear-gradient(to right, rgba(255,0,0,0), rgba(209, 213, 232, 1));
+   padding-left:3rem;
+   padding-top: 1rem;
+   padding-bottom: 1rem;
+   padding-right: 3rem;
+   border: none;
+   margin-top: 2rem;
+}
+
+.newRecipe{
+  color:#CC0000;
+  font-weight: bold;
+  font-size: 28px;
+}
+
+.postsTitle{
+  font-size: 20px;
+  font-weight: bold;
+}
+
+
+i.fas.fa-trash-alt {
+  padding-right: 120px;
+  padding-left: 15px;
+}
+
+.infoContainer{
+  display: flex;
+  justify-content: center;
+}
+
+i.fa.fa-user-circle{
+  padding-right: 5px;
+}
+
+
+span.userName {
+  padding-right: 40px;
+  padding-left: 200px;
+}
+
+i.far.fa-calendar-alt{
+  padding-left: 40px;
+}
+
+footer{
+  background-image: url("footer.jpg");
+  height: 200px;
+  margin-top: 2rem;
+  background-size: cover;
+}
+
+.col-6.contact{
+  color: white;
+  font-weight: 600;
+  font-size: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 2%;
+}
+
+.col-6.stores {
+  font-size: 3rem;
+  color: black;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 2%;
+  align-items: center;
+}
+
+i.fab.fa-apple {
+  margin-right: 4%;
+}
+.logos {
+  display: flex;
+  color: black;
+  justify-content: space-between;
+  width: 50%;
+  font-size: 2rem;
+  margin-top: 2%;
+}
+.new-recipe {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #EA6B66;
+}
+.col-4.edit-delete-icons {
+  text-align: end;
+}
+.card-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  background: inherit;
+  color: black;
+}
+
+.card-body{
+  background:inherit;
+  border: none;
+}
+.btn.btn-danger.saveBtn {
+  border-radius: 20px;
+  width: 4rem;
+  padding: 0;
+  background: #CC0000;
+  margin-bottom: 2%;
+}
+#postList {
+  height: 740px;
+  overflow-x: auto;
+}
+.row.third {
+  justify-content: center;
+  margin-left: 60%;
+}
+
+.row.fourth {
+  justify-content: center;
+  margin-left: 33%;
+}
+.user-name-container {
+  display: flex;
+  margin-right: 25px;
+}
+.comments {
+  margin-right: 20px;
+}
+.date-container {
+  display: flex;
+}
+.fas.fa-user-alt, .fas.fa-calendar-alt{
+  align-self: center;
+  padding-right: 5px;
+}
