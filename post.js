@@ -10,8 +10,12 @@ return str.replace(/(\r\n|\n|\r)/gm, "");
 }*/
 let getCardToEdit = ""
 let getTitleToEdit = ""
+let getIdToEdit = ""
 let getBodyToEdit= ""
 let getSaveBtn= ""
+let commentNumber = 0
+let newCommentCard =""
+let commentsContainer = ""
 
 function clearInputs () {
   document.getElementById("title").value = "";
@@ -38,6 +42,7 @@ function deleteCard () {
 
 function activateEditCard () {
   getCardToEdit = this.parentElement.parentElement.parentElement.parentElement
+  getIdToEdit = getCardToEdit.getElementsByClassName("post-id")[0]
   getTitleToEdit = getCardToEdit.getElementsByClassName("card-title")[0]
   getTitleToEdit.disabled = false
   getTitleToEdit.value
@@ -52,8 +57,9 @@ function editCard (event) {
   event.preventDefault();
   const editedTitle = getTitleToEdit.value;
   const editedBody = getBodyToEdit.value;
+  const editedId = getIdToEdit.value;
   if ((editedTitle.length > 0) && (editedBody.length > 0)) {
-    putPostRequest({ title:editedTitle, body:editedBody });
+    putPostRequest({ title:editedTitle, body:editedBody, id:editedId });
   } else {
     swal.fire("Warning","Please make sure you have filled al the inputs.","warning");
   }
@@ -65,6 +71,7 @@ function editCard (event) {
 function createPost(title,body,id) {
   const newPostCard = document.createElement("div");
   newPostCard.className = "newPost card";
+  newPostCard.setAttribute('id', id);
 
   const newPostContainer = document.createElement("div");
   newPostContainer.className="container";
@@ -165,9 +172,17 @@ function createPost(title,body,id) {
   newPostFourthRowSecondDiv.className="comments";
   newPostFourthRow.appendChild(newPostFourthRowSecondDiv);
 
+  const commentsBtn = document.createElement("button");
+  commentsBtn.className= "btn comments-btn";
+  commentsBtn.setAttribute("data-toggle","tooltip");
+  commentsBtn.setAttribute("data-placement","bottom");
+  commentsBtn.setAttribute("title","View comments");
+  commentsBtn.addEventListener("click" , (event) => getCommentsRequest(event, id))
+  //commentsBtn.addEventListener("click", getCommentsRequest(userId))
   const commentsIcon = document.createElement("i");
   commentsIcon.className="fas fa-comment-dots";
-  newPostFourthRowSecondDiv.appendChild(commentsIcon);
+  commentsBtn.appendChild(commentsIcon)
+  newPostFourthRowSecondDiv.appendChild(commentsBtn);
 
   //Fourth Row Date Div
   const newPostFourthRowThirdDiv = document.createElement("div");
@@ -192,18 +207,83 @@ function createPost(title,body,id) {
 
   const postList = document.getElementById("postList");
   postList.prepend(newPostCard);
+
+  // Comments Container
+  commentsContainer = document.createElement("div");
+  commentsContainer.className = "comments-container";
+  //commentsContainer.setAttribute("hidden","true")
+  newPostCard.appendChild(commentsContainer);
+
+  // First row comments
+  const firstRowComments = document.createElement("div");
+  firstRowComments.className = "row add-comment";
+  commentsContainer.appendChild(firstRowComments)
+
+  const userIconComments = document.createElement("i");
+  userIconComments.className = "fas fa-user";
+  firstRowComments.appendChild(userIconComments);
+
+  const newComment = document.createElement("input");
+  newComment.className = "new-comment";
+  newComment.setAttribute("placeholder", "Write your comment here!")
+  firstRowComments.appendChild(newComment);
+
+  return newPostCard
+  
 }
 
+function createComment(name,email,body,id,postId){
+  newCommentCard = document.createElement("div");
+  newCommentCard.className = "new-comment-card";
+  newCommentCard.setAttribute("id",`postId ${postId}`)
 
+  const newCommentContainer = document.createElement("div");
+  newCommentContainer.className="new-comment-container";
+  newCommentCard.appendChild(newCommentContainer);
+
+  const commentFirstDiv = document.createElement("div");
+  commentFirstDiv.className = "comment-name";
+  commentFirstDiv.innerText = name
+  newCommentContainer.appendChild(commentFirstDiv)
+
+  const commentSecondDiv = document.createElement("div");
+  commentSecondDiv.className = "comment-email";
+  commentSecondDiv.innerText = email
+  newCommentContainer.appendChild(commentSecondDiv)
+
+  const commentThirdDiv = document.createElement("div");
+  commentThirdDiv.className = "comment-body";
+  commentThirdDiv.innerText = body
+  commentThirdDiv.setAttribute("id",`hello-${postId}`)
+  newCommentContainer.appendChild(commentThirdDiv)
+
+  const commentFourthDiv = document.createElement("div");
+  commentFourthDiv.className = "comment-date";
+  commentFourthDiv.innerText = "September 16 2021"
+  newCommentContainer.appendChild(commentFourthDiv)
+
+  const calendarCommentsIcon = document.createElement("i");
+  calendarCommentsIcon.className = "fas fa-calendar-alt";
+  commentFourthDiv.appendChild(calendarCommentsIcon);
+
+  // Comment id
+  const commentId = document.createElement("input");
+  commentId.className="comment-id";
+  commentId.type ="hidden";
+  commentId.value = id;
+  commentFourthDiv.appendChild(commentId);
+
+  return newCommentCard;  
+}
 //REST API'S FUNCTIONS 
-
+// POSTS
 // GET METHOD
 function getPostsRequest() {
   fetch('https://jsonplaceholder.typicode.com/posts')
     .then((response) => response.json())
     .then((postsList) => {
       postsList.map(function (post) {
-        createPost(post.title, post.body, post.id);
+        createPost(post.title, post.body, post.id, post.userId);
       });
     });
 }
@@ -217,7 +297,7 @@ function postPostRequest(body){
   })
   .then(response => response.json()) 
   .then(postPost => 
-    createPost(postPost.title, postPost.body,postPost.id));
+    createPost(postPost.title, postPost.body,postPost.id, postPost.userId));
   }
 
   // DELETE METHOD
@@ -241,9 +321,31 @@ function putPostRequest(body){
     }
   }).then(response => response.json())
     .then(editedPost => 
-      editCard(editedPost.title, editedPost.body));
+      editCard(editedPost.title, editedPost.body, editedPost.id));
  }
+
+ // COMMENTS
+// GET METHOD
+function getCommentsRequest(event,postId) {
+  event.preventDefault();
+  const getCorrespondingPost = document.getElementById(postId)
+  getCommentsContainer = getCorrespondingPost.getElementsByClassName("comments-container")[0];
+
+  fetch(`https://jsonplaceholder.typicode.com/posts/${postId}/comments`)
+  .then((response) => response.json())
+  .then((comment) => {
+    for (let index=0; index < comment.length; index++){
+      if (comment[commentNumber].postId === postId){
+        const createdComment = createComment(comment[commentNumber].name, comment[commentNumber].email, comment[commentNumber].body, comment[commentNumber].id, comment[commentNumber].postId);
+        getCommentsContainer.appendChild(createdComment)
+      }
+      commentNumber = commentNumber+1;
+    }
+    commentNumber = 0;
+  });
+}
+
 
 const publishPost = document.getElementById("publishPost");
 publishPost.addEventListener("click", createNewPost);
-window.addEventListener("load", getPostsRequest());
+window.addEventListener("load", getPostsRequest);
