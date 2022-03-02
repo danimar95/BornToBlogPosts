@@ -258,13 +258,17 @@ function createComment(name,email,body,id,postId){
   newCommentContainer.appendChild(commentThirdDiv)
 
   const commentFourthDiv = document.createElement("div");
-  commentFourthDiv.className = "comment-date";
-  commentFourthDiv.innerText = "September 16 2021"
+  commentFourthDiv.className = "comments-date-container";
   newCommentContainer.appendChild(commentFourthDiv)
 
   const calendarCommentsIcon = document.createElement("i");
   calendarCommentsIcon.className = "fas fa-calendar-alt";
   commentFourthDiv.appendChild(calendarCommentsIcon);
+
+  const commentsDate = document.createElement("div");
+  commentsDate.className="date";
+  commentsDate.innerText="September 16 2022";
+  commentFourthDiv.appendChild(commentsDate)
 
   // Comment id
   const commentId = document.createElement("input");
