@@ -12,14 +12,21 @@ let getCardToEdit = ""
 let getTitleToEdit = ""
 let getIdToEdit = ""
 let getBodyToEdit= ""
+let getNameToEdit= ""
+let getCommentBodyToEdit = ""
 let getSaveBtn= ""
+let getSaveCommentBtn = ""
 let commentNumber = 0
 let newCommentCard =""
 let commentsContainer = ""
 
-function clearInputs () {
+function clearPostInputs () {
   document.getElementById("title").value = "";
   document.getElementById("recipe").value = "";
+}
+
+function clearCommentInputs () {
+  document.getElementById("commentInput").value = "";
 }
 
 function createNewPost() {
@@ -28,7 +35,7 @@ function createNewPost() {
 
   if ((postTitle.length > 0) && (postBody.length > 0)) {
     postPostRequest({title:postTitle, body:postBody});
-    clearInputs();
+    clearPostInputs();
   } else {
     swal.fire("Warning","Please make sure you have filled al the inputs.","warning");
   }
@@ -37,7 +44,14 @@ function createNewPost() {
 function deleteCard () {
   const getPost = this.parentElement.parentElement.parentElement.parentElement
   const postId = getPost.getElementsByClassName("post-id")[0].value;
+  console.log('postIdCard',postId)
   deletePostRequest(getPost,postId)
+}
+
+function deleteComment () {
+  const getComment = this.parentElement.parentElement.parentElement
+  const commentId = getComment.getElementsByClassName("comment-id")[0].value
+  deleteCommentRequest(getComment,commentId)
 }
 
 function activateEditCard () {
@@ -53,6 +67,19 @@ function activateEditCard () {
   getSaveBtn.hidden = false
 }
 
+function activateEditComment () {
+  getCommentToEdit = this.parentElement.parentElement.parentElement
+  getIdToEdit = getCommentToEdit.getElementsByClassName("comment-id")[0]
+  getNameToEdit = getCommentToEdit.getElementsByClassName("comment-name")[0]
+  getNameToEdit.disabled = false
+  getNameToEdit.value
+
+  getCommentBodyToEdit = getCommentToEdit.getElementsByClassName("comment-body")[0]
+  getCommentBodyToEdit.disabled = false
+  getSaveCommentBtn = getCommentToEdit.getElementsByClassName("save-comment-btn")[0]
+  getSaveCommentBtn.hidden = false
+}
+
 function editCard (event) {
   event.preventDefault();
   const editedTitle = getTitleToEdit.value;
@@ -64,13 +91,65 @@ function editCard (event) {
     swal.fire("Warning","Please make sure you have filled al the inputs.","warning");
   }
   getSaveBtn.hidden = true
+  getNameToEdit.disabled = true
+  getCommentBodyToEdit.disabled = true
+}
+
+function editComment(event) {
+  event.preventDefault();
+  console.log("editeeee")
+  const editedName = getNameToEdit.value;
+  const editedCommentBody = getCommentBodyToEdit.value;
+  const editedCommentId = getIdToEdit.value;
+  if((editedName.length > 0) && (editedCommentBody.length > 0)){
+    putCommentRequest({ name:editedName, body:editedCommentBody, id:editedCommentId });
+  } else {
+    swal.fire("Warning","Please make sure you have filled al the inputs.","warning");
+  }
+  getSaveCommentBtn.hidden = true
   getTitleToEdit.disabled = true
   getBodyToEdit.disabled = true
 }
 
+
+function createNewComment(event){
+  if (event.code === 'Enter'){
+    const getCurrentPostCommentsContainer = this.parentElement.parentElement;
+    console.log('currentpost',getCurrentPostCommentsContainer)
+    const newCommentId = getCurrentPostCommentsContainer.getElementsByClassName("comment-id")[0].value;
+    console.log('newCommentId',newCommentId)
+    const newCommentBody = this.value;
+    const newCommentEmail = "janeth94@gmail.com";
+    const newCommentName = "New comment!";
+  
+    if(newCommentBody.length > 0) {
+      postCommentRequest({ name:newCommentName, email:newCommentEmail, body:newCommentBody, postId:newCommentId })
+      clearCommentInputs();
+    }
+  };
+};
+
+function getCommentInformation (event){
+  event.preventDefault();
+  const getCurrentContainer = this.parentElement.parentElement.parentElement.parentElement;
+  const getPostId = Number(getCurrentContainer.getElementsByClassName("post-id")[0].value);
+  console.log('getpostid',getPostId)
+  console.log('currentcontainer',getCurrentContainer)
+  //const commentContainer = document.getElementById(`collapse ${getPostId}`);
+  $(`#collapse-${getPostId}`).on('shown.bs.collapse', function () {
+    console.log("Opened")
+    getCommentsRequest(getPostId);
+  });
+  $(`#collapse-${getPostId}`).on('hidden.bs.collapse', function () {
+    console.log("Closed")
+ });
+
+};
+
 function createPost(title,body,id) {
   const newPostCard = document.createElement("div");
   newPostCard.className = "newPost card";
+  newPostCard.value = id;
   newPostCard.setAttribute('id', id);
 
   const newPostContainer = document.createElement("div");
@@ -174,10 +253,13 @@ function createPost(title,body,id) {
 
   const commentsBtn = document.createElement("button");
   commentsBtn.className= "btn comments-btn";
-  commentsBtn.setAttribute("data-toggle","tooltip");
+  commentsBtn.setAttribute("data-toggle","tooltip");;
   commentsBtn.setAttribute("data-placement","bottom");
+  commentsBtn.setAttribute("type","button")
+  commentsBtn.setAttribute("data-toggle", "collapse");
+  commentsBtn.setAttribute("data-target" ,`#collapse-${id}`)
   commentsBtn.setAttribute("title","View comments");
-  commentsBtn.addEventListener("click" , (event) => getCommentsRequest(event, id))
+  commentsBtn.addEventListener("click" , getCommentInformation)
   //commentsBtn.addEventListener("click", getCommentsRequest(userId))
   const commentsIcon = document.createElement("i");
   commentsIcon.className="fas fa-comment-dots";
@@ -211,7 +293,7 @@ function createPost(title,body,id) {
   // Comments Container
   commentsContainer = document.createElement("div");
   commentsContainer.className = "comments-container";
-  //commentsContainer.setAttribute("hidden","true")
+  commentsContainer.setAttribute("id",`collapse-${id}`);
   newPostCard.appendChild(commentsContainer);
 
   // First row comments
@@ -224,12 +306,13 @@ function createPost(title,body,id) {
   firstRowComments.appendChild(userIconComments);
 
   const newComment = document.createElement("input");
+  newComment.setAttribute("id","commentInput")
   newComment.className = "new-comment";
+  newComment.addEventListener("keypress", createNewComment)
   newComment.setAttribute("placeholder", "Write your comment here!")
   firstRowComments.appendChild(newComment);
 
-  return newPostCard
-  
+  return newPostCard;
 }
 
 function createComment(name,email,body,id,postId){
@@ -241,21 +324,58 @@ function createComment(name,email,body,id,postId){
   newCommentContainer.className="new-comment-container";
   newCommentCard.appendChild(newCommentContainer);
 
-  const commentFirstDiv = document.createElement("div");
+  const commentFirstRow = document.createElement("div");
+  commentFirstRow.className= "comment-first-row";
+  const commentFirstDiv = document.createElement("input");
   commentFirstDiv.className = "comment-name";
-  commentFirstDiv.innerText = name
-  newCommentContainer.appendChild(commentFirstDiv)
+  commentFirstDiv.value = name
+  commentFirstDiv.setAttribute("disabled", "true")
+  const editCommentBtn = document.createElement("button");
+  editCommentBtn.className= "btn cardOptions";
+  editCommentBtn.setAttribute("data-toggle","tooltip");
+  editCommentBtn.setAttribute("data-placement","bottom");
+  editCommentBtn.setAttribute("title","Edit comment");
+  editCommentBtn.addEventListener("click", activateEditComment);
+  const editIcon = document.createElement("i");
+  editIcon.className="fas fa-edit comment-edit-icon";
+  editCommentBtn.appendChild(editIcon)
+  commentFirstRow.appendChild(commentFirstDiv)
+  commentFirstRow.appendChild(editCommentBtn)
+  
+
+  const deleteCommentBtn = document.createElement("button");
+  deleteCommentBtn.className= "btn cardOptions";
+  deleteCommentBtn.setAttribute("data-toggle","tooltip");
+  deleteCommentBtn.setAttribute("data-placement","bottom");
+  deleteCommentBtn.setAttribute("title","Delete comment");
+  deleteCommentBtn.addEventListener("click", deleteComment);
+  const deleteIcon = document.createElement("i");
+  deleteIcon.className="fas fa-trash-alt comment-delete-icon";
+  deleteCommentBtn.appendChild(deleteIcon)
+  commentFirstRow.appendChild(deleteCommentBtn)
+  newCommentContainer.appendChild(commentFirstRow)
 
   const commentSecondDiv = document.createElement("div");
   commentSecondDiv.className = "comment-email";
   commentSecondDiv.innerText = email
   newCommentContainer.appendChild(commentSecondDiv)
 
-  const commentThirdDiv = document.createElement("div");
+  const commentThirdDiv = document.createElement("input");
   commentThirdDiv.className = "comment-body";
-  commentThirdDiv.innerText = body
-  commentThirdDiv.setAttribute("id",`hello-${postId}`)
+  commentThirdDiv.setAttribute("disabled", "true")
+  commentThirdDiv.value = body
+  commentThirdDiv.setAttribute("id",`comment-${id}`)
   newCommentContainer.appendChild(commentThirdDiv)
+
+  const commentSaveCommentDiv = document.createElement("div");
+  const saveCommentBtn =  document.createElement("button");
+  saveCommentBtn.className = "btn btn-danger save-comment-btn";
+  saveCommentBtn.setAttribute("type", "button");
+  saveCommentBtn.setAttribute("hidden","true")
+  saveCommentBtn.innerText = "Save";
+  saveCommentBtn.addEventListener("click", editComment);
+  commentSaveCommentDiv.appendChild(saveCommentBtn)
+  newCommentContainer.appendChild(commentSaveCommentDiv)
 
   const commentFourthDiv = document.createElement("div");
   commentFourthDiv.className = "comments-date-container";
@@ -267,7 +387,7 @@ function createComment(name,email,body,id,postId){
 
   const commentsDate = document.createElement("div");
   commentsDate.className="date";
-  commentsDate.innerText="September 16 2022";
+  commentsDate.innerText="September 18 2022";
   commentFourthDiv.appendChild(commentsDate)
 
   // Comment id
@@ -277,6 +397,14 @@ function createComment(name,email,body,id,postId){
   commentId.value = id;
   commentFourthDiv.appendChild(commentId);
 
+  console.log("postId",postId)
+  console.log("id",document.getElementById(`collapse-${postId}`))
+  const currentCommentsContainer = document.getElementById(`collapse-${postId}`)
+  console.log('currenttttt',currentCommentsContainer)
+  currentCommentsContainer.appendChild(newCommentCard);
+
+  // const commentsContainerId = getCurrentCommentsContainer.getElementsByClassName("post-id")[0].value;
+  // console.log("commentsId", commentsContainerId)
   return newCommentCard;  
 }
 //REST API'S FUNCTIONS 
@@ -314,40 +442,78 @@ function postPostRequest(body){
   }
 
   //PUT METHOD
-function putPostRequest(body){
-  const cardId = getCardToEdit.getElementsByClassName("post-id")[0].value;
-  fetch(`https://jsonplaceholder.typicode.com/posts/${cardId}`, {
-    method: 'PUT', 
-    body: JSON.stringify(body),
-    headers:{
-      'Content-Type': 'application/json'
-      
-    }
-  }).then(response => response.json())
-    .then(editedPost => 
-      editCard(editedPost.title, editedPost.body, editedPost.id));
- }
+  function putPostRequest(body){
+    const cardId = getCardToEdit.getElementsByClassName("post-id")[0].value;
+    fetch(`https://jsonplaceholder.typicode.com/posts/${cardId}`, {
+      method: 'PUT', 
+      body: JSON.stringify(body),
+      headers:{"Content-type": "application/json; charset=UTF-8"}
+    }).then(response => response.json())
+      .then(editedPost => 
+        editCard(editedPost.title, editedPost.body, editedPost.id));
+  }
 
- // COMMENTS
-// GET METHOD
-function getCommentsRequest(event,postId) {
-  event.preventDefault();
-  const getCorrespondingPost = document.getElementById(postId)
-  getCommentsContainer = getCorrespondingPost.getElementsByClassName("comments-container")[0];
-
-  fetch(`https://jsonplaceholder.typicode.com/posts/${postId}/comments`)
-  .then((response) => response.json())
-  .then((comment) => {
-    for (let index=0; index < comment.length; index++){
-      if (comment[commentNumber].postId === postId){
-        const createdComment = createComment(comment[commentNumber].name, comment[commentNumber].email, comment[commentNumber].body, comment[commentNumber].id, comment[commentNumber].postId);
-        getCommentsContainer.appendChild(createdComment)
+  // COMMENTS
+  // GET METHOD
+  function getCommentsRequest(postIdProp) {
+    console.log('postIdProp',typeof(postIdProp))
+    //let commentPlace = document.getElementById(`collapse-${postId}`)
+    fetch(`https://jsonplaceholder.typicode.com/posts/${postIdProp}/comments`)
+    .then((response) => response.json())
+    .then((comment) => {
+      console.log('comment.postID',typeof(comment[commentNumber].postId))
+      for (let index=0; index < comment.length; index++){
+        //console.log(comment[commentNumber].postId === postIdProp)
+        if (comment[commentNumber].postId === postIdProp){
+          //console.log("aqui voy")
+          createComment(comment[commentNumber].name, comment[commentNumber].email, comment[commentNumber].body, comment[commentNumber].id, comment[commentNumber].postId);
+        }
+        commentNumber = commentNumber+1;
       }
-      commentNumber = commentNumber+1;
-    }
-    commentNumber = 0;
-  });
-}
+      commentNumber = 0
+    });
+  }
+
+  // POST METHOD
+  function postCommentRequest(body){
+    fetch(`https://jsonplaceholder.typicode.com/posts/${body.postId}/comments`, {
+      method: "POST",
+      body: JSON.stringify(body),
+      headers: {"Content-type": "application/json; charset=UTF-8"}
+    })
+    .then(response => response.json()) 
+    .then(postComment => 
+    createComment({name:postComment.name, email:postComment.email, body:postComment.body, id:postComment.id, postId:postComment.postId}));   
+  }
+
+  //DELETE METHOD
+  function deleteCommentRequest(getComment,commentId){
+    fetch(`https://jsonplaceholder.typicode.com/comments/${commentId}`,{
+    method: 'DELETE'
+  })
+    .then(response => response.json())
+    .then(() => getComment.remove());
+  }
+
+  //PUT METHOD
+  function putCommentRequest(body){
+    const commentId = getCommentToEdit.getElementsByClassName("comment-id")[0].value;
+    fetch(`https://jsonplaceholder.typicode.com/comments/${commentId}`, {
+      method: 'PUT', 
+      body: JSON.stringify(body),
+      headers:{"Content-type": "application/json; charset=UTF-8"}
+    }).then(response => response.json())
+      .then(editedComment => 
+        editComment(editedComment.name, editedComment.body, editedComment.id));
+  }
+  // https://jsonplaceholder.typicode.com/posts/1/comments GET sending title
+  // https://jsonplaceholder.typicode.com/posts/1/comments POST
+  // https://jsonplaceholder.typicode.com/comments/1 DELETE id on url
+  // https://jsonplaceholder.typicode.com/comments/1 PUT same as
+//ARREGLAR EL GET COMMENTS. (UNICO QUE ME FALTARIA)
+//ARREGLAR EL COMMENTARIO DEFAULT QUE NO SE ESCONDE
+//PARA HACER EL GET  const currentContainer = document.getElementById(`collapse-${postId}`) ID PARA POST
+
 
 
 const publishPost = document.getElementById("publishPost");

@@ -265,6 +265,19 @@ i.fab.fa-apple {
   font-weight: bold;
   font-size: .8rem;
 }
+.fas.fa-trash-alt.comment-delete-icon {
+  position: absolute;
+  right: 0;
+  top:5px;
+}
+.fas.fa-edit.comment-edit-icon {
+  position: absolute;
+  right: 160px;
+  top: 5px;
+}
+.btn.cardOptions:active:focus {
+  box-shadow: none;
+}
 .new-comment-container {
   border-radius: 15px;
   border: aquamarine;
@@ -287,5 +300,12 @@ i.fab.fa-apple {
 .comments-date-container {
   display: flex;
   justify-content: center;
-  margin-left: 57%;
+  margin-left: 56%;
+}
+.comment-name, .comment-body {
+  background: transparent;
+  border: none;
+}
+.comment-first-row{
+  position: relative;
 }
